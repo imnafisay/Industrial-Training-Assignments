@@ -13,56 +13,59 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-   title: Row(
-  children: const [
-    Icon(Icons.note_alt_outlined, size: 24),
-    SizedBox(width: 8),
-    Text(
-      'My Notes',
-      style: TextStyle(fontWeight: FontWeight.bold),
-    ),
-  ],
-),
-
-  ),
+        title: Row(
+          children: const [
+            Icon(Icons.note_alt_outlined, size: 22),
+            SizedBox(width: 8),
+            Text('My Notes'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Add note',
+            onPressed: () => context.go('/add'),
+            icon: const Icon(Icons.add_circle_outline),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.go('/add'),
         child: const Icon(Icons.add),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: notes.isEmpty
-            ? _EmptyState(onAdd: () => context.go('/add'))
-            : ListView.separated(
-                itemCount: notes.length + 1, // +1 for settings tile
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  if (index < notes.length) {
-                    final n = notes[index];
-                    return _NoteCard(
-                      title: n.title,
-                      body: n.body,
-                      updatedAt: n.updatedAt,
-                      onTap: () => context.go('/note/${n.id}'),
-                      color: cs.surface,
-                    );
-                  }
-                  // Settings “tile” section
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      const Divider(height: 24, thickness: 0.6),
-                      ListTile(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        leading: const Icon(Icons.settings),
-                        title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.w600)),
-                        onTap: () => context.go('/settings'),
-                      ),
-                    ],
-                  );
-                },
-              ),
+        child: ListView(
+          children: [
+            // ----- SECTION 1: notes or empty state -----
+            if (notes.isEmpty)
+              _EmptyState(onAdd: () => context.go('/add'))
+            else
+              ...List.generate(notes.length, (i) {
+                final n = notes[i];
+                return Padding(
+                  padding: EdgeInsets.only(bottom: i == notes.length - 1 ? 0 : 12),
+                  child: _NoteCard(
+                    title: n.title,
+                    body: n.body,
+                    updatedAt: n.updatedAt,
+                    onTap: () => context.go('/note/${n.id}'),
+                    color: Theme.of(context).cardTheme.color,
+                  ),
+                );
+              }),
+
+            const SizedBox(height: 16),
+            const Divider(height: 24, thickness: 0.6),
+
+            // ----- SECTION 2: settings tile (always visible) -----
+            ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.w600)),
+              onTap: () => context.go('/settings'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +102,6 @@ class _NoteCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
           child: Row(
             children: [
-              // Accent line
               Container(
                 width: 4,
                 height: 56,
@@ -109,7 +111,6 @@ class _NoteCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // Texts
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +127,7 @@ class _NoteCard extends StatelessWidget {
                       children: [
                         _Chip(text: 'Updated ${_friendly(updatedAt)}'),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -180,9 +181,10 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 56, horizontal: 24),
         child: Column(
           children: [
-            Icon(Icons.note_alt_outlined, size: 72, color: cs.primary),
+            Icon(Icons.edit_note, size: 72, color: cs.primary),
             const SizedBox(height: 16),
-            Text('No notes yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            Text('No notes yet',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text('Create your first note to get started.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurface.withOpacity(0.7))),
