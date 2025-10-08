@@ -1,6 +1,7 @@
 # newss_app
 
-A new Flutter project.
+A news app using hackernews api
+
 
 ## Getting Started
 
